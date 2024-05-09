@@ -1,5 +1,13 @@
 # nlp-customer-review-analysis
 Model and predict customer satisfaction ratings, given their textual review for a given business. Extract business insights.
+
+# Setup
+- Install Git LFS https://git-lfs.com/
+- Install anaconda  https://www.anaconda.com/download
+- Clone the repo(HTTPS): git clone https://github.com/Kamiryu/nlp-customer-review-analysis.git
+- Install the conda environement: conda env create -f environment.yml
+  - If you add any dependencies, add them to environment.yml
+
 # Overview
 ## Tasks
 You will be working with customer review data about various businesses in North America. The data are in particular composed of textual reviews from customers for given businesses. Each review is accompanied by the customer's satisfaction rating of the business and its services, ranging from 1 (bad) to 5 (good). You also have access to additional information about each customer, and about each business.
