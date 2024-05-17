@@ -27,8 +27,14 @@ def extract_hours_value(hours_dictionary:Dict) -> List:
 def extract_attributes_value(attr_dictionary: Dict) -> List:
     values = []
     for (k, v) in attr_dictionary.items():
-        if v:
+        
+        if isinstance(v, dict):
+            for (k2, v2) in v.items():
+                values.append(k2)
+        elif v:
             values.append(k)
+
+        
     return values
 
 
