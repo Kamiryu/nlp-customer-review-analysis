@@ -6,6 +6,14 @@ from sklearn.cluster import KMeans
 # from sklearn.cluster import DBSCAN
 import string
 import regex as re
+from transformers import pipeline
+import time 
+from transformers import pipeline
+import matplotlib.pyplot as plt
+
+
+
+
 
 def classify_Kmeans(col_name='categories_list', seed_num=7):
 
@@ -46,3 +54,40 @@ def classify_Kmeans(col_name='categories_list', seed_num=7):
         print(f"Cluster kmeans {cluster}:")
         print(data_train[data_train['cluster'] == cluster]['categories_list'].values)
 
+
+
+def sentimentAnalysis(col_name):
+
+    df_data_train = pd.read_parquet('data/ATML2024_Task2_PhiliBussRatings.parquet', engine='pyarrow')
+
+    sent_pipe = pipeline("sentiment-analysis", # or "text-classification"
+                        model="distilbert-base-uncased-finetuned-sst-2-english")
+
+    df_data_train['textc1'] = df_data_train['text'].apply(lambda x: re.sub(f"[{string.punctuation}]", "", x.lower()))
+    df_data_train['textc1'] = df_data_train['textc1'].apply(lambda x: x.replace('\n', ' '))
+
+    df_data_train['textc1_len'] = df_data_train['textc1'].apply(lambda x: len(x))
+    df_data_train['textc1_tok'] = df_data_train['textc1'].apply(lambda x: len(x.split(' ')))
+
+
+    text_length = df_data_train['textc1'].apply(lambda x: len(x))
+    text_length_token = df_data_train['textc1'].apply(lambda x: len(x.split(' ')))    
+    _ = plt.hist(text_length, bins='auto')  # arguments are passed to np.histogram
+    plt.title("Histogram with 'auto' bins")
+    plt.show()
+
+    _ = plt.hist(text_length_token, bins='auto')  # arguments are passed to np.histogram
+    plt.title("Histogram with 'auto' bins")
+    plt.show()
+
+    df_data_train = df_data_train[ (df_data_train['textc1_len'] < 2500) & (df_data_train['textc1_tok'] < 500)]
+    
+    # sampled_df = df_data_train.sample(frac=1)
+
+    print(df_data_train.shape)
+    start = time.time()
+    df_data_train['sent'] = df_data_train['textc1'].apply(sent_pipe)
+    print(time.time() - start)
+
+
+    df_data_train.to_parquet('data/ATML2024_Task2_ReviewsSentiment.parquet')

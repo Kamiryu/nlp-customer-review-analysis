@@ -38,6 +38,24 @@ def extract_attributes_value(attr_dictionary: Dict) -> List:
     return values
 
 
+
+def extract_attributes_value2(attr_dictionary: Dict) -> List:
+    values = []
+    for (k, v) in attr_dictionary.items():
+
+        try: 
+            if isinstance(ast.literal_eval(v), dict):
+                for (k2, v2) in ast.literal_eval(v).items():                    
+                    if v2:
+                        # print(k+"-"+k2)
+                        values.append( (k+"-"+k2).lower() )
+            elif v:
+                values.append(k.lower())
+        except:
+            if v:
+                values.append(k.lower())
+    return values
+
 ########################################################################################################################################################
 import nltk
 # from nltk.stem import PorterStemmer
