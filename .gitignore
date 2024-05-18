@@ -4,3 +4,4 @@
 *.parquet
 data/
 __pycache__/
+nlp-venv/*
