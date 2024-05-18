@@ -3,3 +3,8 @@
 
 # ignore data files
 data/**
+*.csv
+*.parquet
+data/
+__pycache__/
+nlp-venv/*
