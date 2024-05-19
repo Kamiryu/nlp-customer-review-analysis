@@ -8,3 +8,7 @@ data/**
 data/
 __pycache__/
 nlp-venv/*
+
+# Vim
+.swp
+venvpath.txt
