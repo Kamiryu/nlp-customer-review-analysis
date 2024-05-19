@@ -1,5 +1,8 @@
 # IDE settings
 .vscode/
+
+# ignore data files
+data/**
 *.csv
 *.parquet
 data/

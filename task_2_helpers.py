@@ -2,10 +2,20 @@ import pandas as pd
 import ast as ast
 import numpy as np
 import string
+
+
 # string.punctuation
 
 from typing import *
 
+########################################################################################################################################################
+# sentiment analysis
+from transformers import pipeline
+def sentiment(text):
+    output = sent_pipe(text)[0]['label']
+    return output
+
+########################################################################################################################################################
 
 def extract_weekend_value(hours_dictionary:Dict) -> bool:
     days =  hours_dictionary.keys()
