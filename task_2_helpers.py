@@ -1,9 +1,12 @@
 import pandas as pd
+pd.options.mode.chained_assignment = None 
 import ast as ast
 import numpy as np
 import string
 from typing import *
-pd.options.mode.chained_assignment = None 
+import matplotlib.pyplot as plt
+import seaborn as sns
+from textblob import TextBlob
 
 
 ########################################################################################################################################################
@@ -75,12 +78,12 @@ def extract_attributes_value_nested(attr_dictionary: Dict) -> List:
                 for (k2, v2) in ast.literal_eval(v).items():                    
                     if v2:
                         # print(k+"-"+k2)
-                        values.append( (k+"-"+k2).lower() )
+                        values.append( (k+"-"+k2) )
             elif v:
-                values.append(k.lower())
+                values.append(k)
         except:
             if v:
-                values.append(k.lower())
+                values.append(k)
     return values
 
 
@@ -155,3 +158,87 @@ def tfidf_representation(bow_representation: List[List]) -> List[List]:
     tfidf_repr = tfidf_transformer.fit_transform(bow_representation)
 
     return tfidf_repr
+
+
+
+########################################################################################################################################################
+
+
+def plot_trending_figures(df, x, y, hue, marker, xlabel, ylabel, legend, title):
+    # Plot the data
+    plt.figure(figsize=(14, 7))
+
+    # Create a lineplot with seaborn
+    sns.lineplot(data=df, x=x, y=y, hue=hue, marker=marker)
+
+    # Adjust the legend to be on the side
+    plt.legend(title=legend, bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Set plot labels and title
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.xticks(rotation=45)
+
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
+
+
+######################## ASPECT BASED SENTIMENT ANALYSIS ##############################
+#######################################################################################
+def extract_aspect_sentences(review, aspect_keywords):
+    aspect_sentences = {aspect: [] for aspect in aspect_keywords}
+    sentences = nltk.tokenize.sent_tokenize(review)
+    
+    for sentence in sentences:
+        for aspect, keywords in aspect_keywords.items():
+            if any(keyword in sentence.lower() for keyword in keywords):
+                aspect_sentences[aspect].append(sentence)
+    
+    return aspect_sentences
+
+def get_sentiment(text):
+    blob = TextBlob(text)
+    # Determine sentiment polarity
+    sentiment_polarity = blob.sentiment.polarity
+    # Classify sentiment as positive, negative, or neutral
+    if sentiment_polarity > 0:
+        return 'positive'
+    elif sentiment_polarity < 0:
+        return 'negative'
+    else:
+        return 'neutral'
+
+def analyze_aspects(review, aspect_keywords):
+    aspect_sentences = extract_aspect_sentences(review, aspect_keywords)
+    aspect_sentiments = {}
+    
+    for aspect, sentences in aspect_sentences.items():
+        sentiments = [get_sentiment(sentence) for sentence in sentences]
+        # Aggregate sentiment for the aspect
+        if sentiments:
+            sentiment = max(set(sentiments), key=sentiments.count)
+        else:
+            sentiment = 'neutral'
+        aspect_sentiments[aspect] = sentiment
+    
+    return aspect_sentiments
+
+def lemmatize_string(text, pos_arg={"VERB":'v', "ADJ":'a', "ADV":'r', "NOUN":'n'}) -> string:
+
+    pos_arg={"VERB":'v', "ADJ":'a', "ADV":'r', "NOUN":'n'}
+    tokens = nltk.tokenize.word_tokenize(text.lower())
+
+    lems = []
+
+    for w, pos in nltk.pos_tag(tokens, tagset="universal"):
+        pos = pos_arg[pos] if pos in pos_arg.keys() else 'n'
+        lem = wnl.lemmatize(w, pos=pos)
+
+        if lem not in stopwords:
+            lems.append(lem)
+
+    lemmatized_string = ' '.join(lems)
+
+    return lemmatized_string
