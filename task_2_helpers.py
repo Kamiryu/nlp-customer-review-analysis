@@ -2,18 +2,9 @@ import pandas as pd
 import ast as ast
 import numpy as np
 import string
-
-
-# string.punctuation
-
 from typing import *
 
-########################################################################################################################################################
-# sentiment analysis
-from transformers import pipeline
-def sentiment(text):
-    output = sent_pipe(text)[0]['label']
-    return output
+
 
 ########################################################################################################################################################
 
@@ -22,6 +13,7 @@ def extract_weekend_value(hours_dictionary:Dict) -> bool:
     if 'Saturday' in days  or 'Sunday' in days :
         return True
     return False
+
 
 def extract_hours_value(hours_dictionary:Dict) -> List:
     values = dict(zip(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], list([-1, -1]  for i in range (7))))
@@ -37,19 +29,14 @@ def extract_hours_value(hours_dictionary:Dict) -> List:
 def extract_attributes_value(attr_dictionary: Dict) -> List:
     values = []
     for (k, v) in attr_dictionary.items():
-        
-        if isinstance(v, dict):
-            for (k2, v2) in v.items():
-                values.append(k2)
-        elif v:
-            values.append(k)
 
-        
+        if v:
+            values.append(k)
+     
     return values
 
 
-
-def extract_attributes_value2(attr_dictionary: Dict) -> List:
+def extract_attributes_value_nested(attr_dictionary: Dict) -> List:
     values = []
     for (k, v) in attr_dictionary.items():
 
@@ -65,6 +52,28 @@ def extract_attributes_value2(attr_dictionary: Dict) -> List:
             if v:
                 values.append(k.lower())
     return values
+
+
+
+def select_preprocess_Phili_business(df_business: pd.DataFrame) -> pd.DataFrame:
+    df_business_ph = df_business.copy()
+    df_business_ph['postal_code_int'] = pd.to_numeric(df_business_ph['postal_code'], errors='coerce', downcast='integer')
+    df_business_ph = df_business_ph.loc[ (df_business_ph['postal_code_int'] >= 19019) & (df_business_ph['postal_code_int'] <= 19255) ]
+
+    # Convert attributes
+    df_business_ph['attributes'] = df_business_ph['attributes'].apply(lambda x: ast.literal_eval(x) if not pd.isna(x) or not pd.isnull(x)  else dict())
+    df_business_ph['attributes_list'] = df_business_ph['attributes'].apply(lambda x: sorted(extract_attributes_value_nested(x)))
+
+    # Convert hours
+    df_business_ph['hours'] = df_business_ph['hours'].apply(lambda x: ast.literal_eval(x) if not pd.isna(x) or not pd.isnull(x)  else dict())
+    df_business_ph['hours_list'] = df_business_ph['hours'].apply(lambda x: extract_hours_value(x))
+
+    # Convert categories
+    df_business_ph['categories_list'] = df_business_ph['categories'].apply(lambda x: sorted(map(lambda a: a.strip().lower(), x.split(',')) ) if isinstance(x, str) else [x])
+
+    return df_business_ph
+
+
 
 ########################################################################################################################################################
 import nltk
