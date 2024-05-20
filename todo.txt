@@ -1,0 +1,5 @@
+1 - Merge all notebooks (add temperal analysis 2.2)
+2 - Review plots, check with boxplots also 
+3 - Add insight (Markdown text)
+4 - Prepare dataframe for google colabs 
+
