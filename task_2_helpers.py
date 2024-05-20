@@ -2,18 +2,39 @@ import pandas as pd
 import ast as ast
 import numpy as np
 import string
-
-
-# string.punctuation
-
 from typing import *
+pd.options.mode.chained_assignment = None 
+
 
 ########################################################################################################################################################
-# sentiment analysis
-from transformers import pipeline
-def sentiment(text):
-    output = sent_pipe(text)[0]['label']
-    return output
+
+def split_tokens(df_data: pd.DataFrame) -> pd.DataFrame:
+    # Find quantity of reviews with more than 375 tokens
+    df_data["token"] = df_data["text"].apply(lambda x: len(x.split(" ")))
+    df_data[df_data["token"] >= 375].shape[0] / df_data.shape[0]
+    # print(df_data["token"].describe())
+
+    # Split the dataset up to 3 parts of 125 tokens each
+    df_1 = df_data[(df_data["token"] >= 1) & (df_data["token"] <= 125)]
+    df_2 = df_data[(df_data["token"] >= 126) & (df_data["token"] <= 250)]
+    df_3 = df_data[(df_data["token"] >= 251) & (df_data["token"] <= 375)]
+
+    # Write in new columns the tokens
+    df_2["token_1"] = df_2["text"].apply(lambda x: " ".join(x.split()[:125]))
+    df_2["token_2"] = df_2.loc["text"].apply(lambda x: " ".join(x.split()[125:250]))
+
+    df_3["token_1"] = df_3["text"].apply(lambda x: " ".join(x.split()[:125]))
+    df_3["token_2"] = df_3["text"].apply(lambda x: " ".join(x.split()[125:250]))
+    df_3["token_3"] = df_3["text"].apply(lambda x: " ".join(x.split()[250:375]))
+
+    return  df_1, df_2, df_3
+
+
+
+
+
+
+
 
 ########################################################################################################################################################
 
@@ -22,6 +43,7 @@ def extract_weekend_value(hours_dictionary:Dict) -> bool:
     if 'Saturday' in days  or 'Sunday' in days :
         return True
     return False
+
 
 def extract_hours_value(hours_dictionary:Dict) -> List:
     values = dict(zip(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], list([-1, -1]  for i in range (7))))
@@ -37,19 +59,14 @@ def extract_hours_value(hours_dictionary:Dict) -> List:
 def extract_attributes_value(attr_dictionary: Dict) -> List:
     values = []
     for (k, v) in attr_dictionary.items():
-        
-        if isinstance(v, dict):
-            for (k2, v2) in v.items():
-                values.append(k2)
-        elif v:
-            values.append(k)
 
-        
+        if v:
+            values.append(k)
+     
     return values
 
 
-
-def extract_attributes_value2(attr_dictionary: Dict) -> List:
+def extract_attributes_value_nested(attr_dictionary: Dict) -> List:
     values = []
     for (k, v) in attr_dictionary.items():
 
@@ -65,6 +82,28 @@ def extract_attributes_value2(attr_dictionary: Dict) -> List:
             if v:
                 values.append(k.lower())
     return values
+
+
+
+def select_preprocess_Phili_business(df_business: pd.DataFrame) -> pd.DataFrame:
+    df_business_ph = df_business.copy()
+    df_business_ph['postal_code_int'] = pd.to_numeric(df_business_ph['postal_code'], errors='coerce', downcast='integer')
+    df_business_ph = df_business_ph.loc[ (df_business_ph['postal_code_int'] >= 19019) & (df_business_ph['postal_code_int'] <= 19255) ]
+
+    # Convert attributes
+    df_business_ph['attributes'] = df_business_ph['attributes'].apply(lambda x: ast.literal_eval(x) if not pd.isna(x) or not pd.isnull(x)  else dict())
+    df_business_ph['attributes_list'] = df_business_ph['attributes'].apply(lambda x: sorted(extract_attributes_value_nested(x)))
+
+    # Convert hours
+    df_business_ph['hours'] = df_business_ph['hours'].apply(lambda x: ast.literal_eval(x) if not pd.isna(x) or not pd.isnull(x)  else dict())
+    df_business_ph['hours_list'] = df_business_ph['hours'].apply(lambda x: extract_hours_value(x))
+
+    # Convert categories
+    df_business_ph['categories_list'] = df_business_ph['categories'].apply(lambda x: sorted(map(lambda a: a.strip().lower(), x.split(',')) ) if isinstance(x, str) else [x])
+
+    return df_business_ph
+
+
 
 ########################################################################################################################################################
 import nltk
