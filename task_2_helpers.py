@@ -157,4 +157,20 @@ def analyze_aspects(review, aspect_keywords):
     
     return aspect_sentiments
 
+def lemmatize_string(text, pos_arg={"VERB":'v', "ADJ":'a', "ADV":'r', "NOUN":'n'}) -> string:
 
+    pos_arg={"VERB":'v', "ADJ":'a', "ADV":'r', "NOUN":'n'}
+    tokens = nltk.tokenize.word_tokenize(text.lower())
+
+    lems = []
+
+    for w, pos in nltk.pos_tag(tokens, tagset="universal"):
+        pos = pos_arg[pos] if pos in pos_arg.keys() else 'n'
+        lem = wnl.lemmatize(w, pos=pos)
+
+        if lem not in stopwords:
+            lems.append(lem)
+
+    lemmatized_string = ' '.join(lems)
+
+    return lemmatized_string
