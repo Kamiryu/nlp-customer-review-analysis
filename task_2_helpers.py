@@ -1,10 +1,11 @@
 import pandas as pd
+pd.options.mode.chained_assignment = None 
 import ast as ast
 import numpy as np
 import string
 from typing import *
-pd.options.mode.chained_assignment = None 
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 ########################################################################################################################################################
 
@@ -75,12 +76,12 @@ def extract_attributes_value_nested(attr_dictionary: Dict) -> List:
                 for (k2, v2) in ast.literal_eval(v).items():                    
                     if v2:
                         # print(k+"-"+k2)
-                        values.append( (k+"-"+k2).lower() )
+                        values.append( (k+"-"+k2) )
             elif v:
-                values.append(k.lower())
+                values.append(k)
         except:
             if v:
-                values.append(k.lower())
+                values.append(k)
     return values
 
 
@@ -155,3 +156,28 @@ def tfidf_representation(bow_representation: List[List]) -> List[List]:
     tfidf_repr = tfidf_transformer.fit_transform(bow_representation)
 
     return tfidf_repr
+
+
+
+########################################################################################################################################################
+
+
+def plot_trending_figures(df, x, y, hue, marker, xlabel, ylabel, legend, title):
+    # Plot the data
+    plt.figure(figsize=(14, 7))
+
+    # Create a lineplot with seaborn
+    sns.lineplot(data=df, x=x, y=y, hue=hue, marker=marker)
+
+    # Adjust the legend to be on the side
+    plt.legend(title=legend, bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Set plot labels and title
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.xticks(rotation=45)
+
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
