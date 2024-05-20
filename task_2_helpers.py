@@ -2,8 +2,7 @@ import pandas as pd
 import ast as ast
 import numpy as np
 import string
-
-
+from textblob import TextBlob
 # string.punctuation
 
 from typing import *
@@ -122,7 +121,7 @@ def tfidf_representation(bow_representation: List[List]) -> List[List]:
 #######################################################################################
 def extract_aspect_sentences(review, aspect_keywords):
     aspect_sentences = {aspect: [] for aspect in aspect_keywords}
-    sentences = sent_tokenize(review)
+    sentences = nltk.tokenize.sent_tokenize(review)
     
     for sentence in sentences:
         for aspect, keywords in aspect_keywords.items():
